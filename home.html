@@ -1,377 +1,247 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Nota Pengeluaran - Home</title>
+<meta charset="UTF-8">
+<title>Nota Gaji / Pengeluaran</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-  :root{
-    --bg:#f4f6f8; --card:#fff; --accent:#1976d2; --danger:#c62828;
-    --muted:#666; --table-border:#e0e0e0; --subtotal:#fff8e1;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Inter, Roboto, Arial, sans-serif;background:var(--bg);color:#111}
-  header{background:var(--card);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,0.03)}
-  header h1{margin:0;font-size:18px}
-  header .actions{display:flex;gap:8px;align-items:center}
-  .container{max-width:1000px;margin:18px auto;padding:16px}
-  /* FORM (fixed) */
-  .form-fixed{
-    position:fixed;right:18px;top:80px;width:320px;background:var(--card);padding:14px;border-radius:10px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.08);z-index:30
-  }
-  label{display:block;font-size:13px;margin:8px 0 4px;color:var(--muted)}
-  input[type="date"], input[type="text"], input[type="number"]{
-    width:100%;padding:8px;border-radius:6px;border:1px solid #dcdcdc
-  }
-  .btn-row{display:flex;gap:8px;margin-top:10px}
-  button, .btn {
-    padding:9px 10px;border-radius:6px;border:0;cursor:pointer;font-weight:600
-  }
-  .btn-add{background:var(--accent);color:#fff;flex:1}
-  .btn-clear{background:#eee;color:#333}
-  .btn-export{background:#4caf50;color:#fff}
-  .btn-logout{background:var(--danger);color:#fff}
-  /* TABLE */
-  .table-wrap{overflow-x:auto;padding-right:10px}
-  table{width:100%;border-collapse:collapse;background:var(--card);box-shadow:0 6px 20px rgba(0,0,0,0.03)}
-  th, td{padding:10px;border-bottom:1px solid var(--table-border);text-align:left}
-  th{background:#fafafa;position:sticky;top:0}
-  .date-title{background:#eef3ff;padding:8px 12px;border-radius:6px;margin:10px 0;font-weight:700}
-  .subtotal-row{background:var(--subtotal);font-weight:700}
-  .right{text-align:right}
-  .small{font-size:13px;color:var(--muted)}
-  .controls button{margin-right:6px; padding:6px 8px; border-radius:6px; border:0; cursor:pointer}
-  .controls .edit{background:#1976d2;color:#fff}
-  .controls .del{background:#e53935;color:#fff}
-  .grand-total{margin-top:12px;padding:12px;background:#fff8e1;border-radius:8px;font-weight:800;text-align:right}
-  /* responsive: jika layar kecil, form tidak jadi fixed */
-  @media(max-width:880px){
-    .form-fixed{position:static;width:100%;margin-bottom:12px}
-    .container{padding:8px}
-  }
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background: #eef1f5;
+        padding: 20px;
+    }
+    .card {
+        max-width: 700px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+        text-align: center;
+        margin-top: 0;
+    }
+    input, button {
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+    button {
+        cursor: pointer;
+        border: none;
+        color: white;
+    }
+    .btn-blue { background: #3498db; }
+    .btn-black { background: #444; }
+    .btn-orange { background: #e67e22; }
+    .mt { margin-top: 10px; }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        background: white;
+    }
+    table th {
+        background: #3498db;
+        color: white;
+        padding: 8px;
+    }
+    table td {
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+    }
+    .subtotal {
+        background: #2ecc71;
+        color: white;
+        padding: 10px;
+        font-weight: bold;
+        margin-top: 10px;
+        border-radius: 5px;
+    }
+    #grandTotal {
+        margin-top: 20px;
+        padding: 12px;
+        background: #27ae60;
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 5px;
+        display: none;
+    }
 </style>
 </head>
 <body>
-<header>
-  <h1>Nota Pengeluaran</h1>
-  <div class="actions">
-    <div class="small">User: <strong>Arfandi123</strong></div>
-    <button class="btn btn-logout" onclick="logout()" title="Logout">Logout</button>
-  </div>
-</header>
 
-<div class="container">
-  <!-- form fixed -->
-  <div class="form-fixed" id="formBox">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div style="font-weight:700">Tambah / Edit Nota</div>
-      <div class="small" id="modeLabel">Mode: Tambah</div>
+<div class="card">
+
+    <h2>Nota Gaji / Pengeluaran</h2>
+
+    <input type="date" id="tanggal">
+    <button class="btn-blue mt" onclick="tambahTanggal()">Tambah Tanggal</button>
+
+    <div id="area"></div>
+
+    <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn-blue" onclick="exportJSON()">Export JSON</button>
+
+        <label class="btn-black" style="cursor:pointer;">
+            Import JSON
+            <input type="file" id="fileImport" style="display:none" onchange="importJSON(event)">
+        </label>
+
+        <!-- 🔥 TOMBOL PDF BARU -->
+        <button class="btn-orange" onclick="downloadPDF()">Download PDF</button>
     </div>
 
-    <label for="tgl">Tanggal</label>
-    <input type="date" id="tgl">
+    <div id="grandTotal"></div>
 
-    <label for="nama">Nama Barang</label>
-    <input type="text" id="nama" placeholder="Contoh: Tinta Printer">
-
-    <label for="harga">Harga (angka, boleh pakai titik/komer)</label>
-    <input type="text" id="harga" placeholder="Contoh: 115000">
-
-    <label for="banyak">Banyaknya (boleh teks, contoh: '25 batang')</label>
-    <input type="text" id="banyak" placeholder="Contoh: 25 batang">
-
-    <div class="btn-row">
-      <button class="btn-add" id="addBtn" onclick="tambahAtauUpdate()">Tambah</button>
-      <button class="btn-clear" onclick="resetForm()">Bersihkan</button>
-    </div>
-
-    <div style="margin-top:10px;display:flex;gap:8px">
-      <button class="btn btn-export" onclick="exportData()">Export</button>
-      <label class="btn" style="background:#eee;color:#000;padding:9px 10px;border-radius:6px;cursor:pointer">
-        Import
-        <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
-      </label>
-    </div>
-    <small style="display:block;margin-top:8px;color:var(--muted)">Export/Import berguna bila ingin memindahkan data antar perangkat.</small>
-  </div>
-
-  <main>
-    <div style="margin-bottom:12px">
-      <div class="small">Petunjuk cepat: Harga ditulis angka (boleh gunakan titik). Banyaknya dapat berformat teks — sistem akan mengambil angka yang ada untuk perhitungan. Jika tidak ada angka pada banyaknya, dianggap 1.</div>
-    </div>
-
-    <div id="tabel-area" class="table-wrap"></div>
-
-    <div id="grand" class="grand-total" style="display:none"></div>
-  </main>
 </div>
 
+
 <script>
-/* =========== AUTH CHECK =========== */
-if(localStorage.getItem("nota_logged_in") !== "Arfandi123"){
-  // bukan user -> kembali ke login
-  window.location.href = "index.html";
+// ------------------ DATA ---------------------
+let data = JSON.parse(localStorage.getItem("nota") || "{}");
+
+function save() {
+    localStorage.setItem("nota", JSON.stringify(data));
+    tampilkan();
 }
 
-/* =========== STORAGE KEY =========== */
-const STORAGE_KEY = "pengeluaran_Arfandi123";
+// ------------------ TAMBAH TANGGAL ---------------------
+function tambahTanggal() {
+    let tgl = document.getElementById("tanggal").value;
+    if (!tgl) return alert("Pilih tanggal dahulu");
 
-/* =========== DATA LOAD =========== */
-let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-
-/* =========== HELPER: format Rp =========== */
-function formatRp(n){
-  // menerima number
-  if (isNaN(n) || n === null) return "Rp.0";
-  const s = Math.round(n).toString();
-  // tambahkan titik setiap 3 dari belakang
-  return "Rp." + s.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    if (!data[tgl]) data[tgl] = [];
+    save();
 }
 
-/* =========== HELPER: parse harga input => number =========== */
-function parseHarga(str){
-  if (typeof str === "number") return str;
-  if (!str) return 0;
-  // hapus semua kecuali digit
-  const digits = String(str).replace(/[^\d]/g, "");
-  return digits ? parseInt(digits, 10) : 0;
+// ------------------ TAMBAH BARANG ---------------------
+function tambahBarang(tgl) {
+    let nama = document.getElementById("nama-"+tgl).value;
+    let qty = parseInt(document.getElementById("qty-"+tgl).value);
+    let harga = parseInt(document.getElementById("harga-"+tgl).value);
+
+    if (!nama || !qty || !harga) return alert("Semua kolom wajib diisi");
+
+    data[tgl].push({ nama, qty, harga });
+    save();
 }
 
-/* =========== HELPER: parse banyaknya => angka (first number) =========== */
-function parseBanyak(str){
-  if (typeof str === "number") return Number(str);
-  if (!str) return 1;
-  const m = String(str).match(/-?\d+(\.\d+)?/);
-  if (m) return Number(m[0]);
-  return 1;
+// ------------------ HAPUS ITEM ---------------------
+function hapusItem(tgl, i) {
+    data[tgl].splice(i, 1);
+    save();
 }
 
-/* =========== RENDERING =========== */
-function simpan(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
+// ------------------ TAMPILKAN ---------------------
+function tampilkan() {
+    let html = "";
+    let grandTotal = 0;
 
-function tampilkan(){
-  const area = document.getElementById("tabel-area");
-  if(!data.length){
-    area.innerHTML = '<div style="padding:12px;background:#fff;border-radius:8px">Belum ada data.</div>';
-    document.getElementById("grand").style.display = "none";
-    return;
-  }
+    Object.keys(data).sort().forEach(tgl => {
+        let subtotal = 0;
 
-  // kelompokkan berdasarkan tanggal
-  const grup = {};
-  data.forEach(item => {
-    if(!grup[item.tgl]) grup[item.tgl] = [];
-    grup[item.tgl].push(item);
-  });
+        html += `<h3>${tgl}</h3>
+        <input placeholder='Nama Barang' id='nama-${tgl}'>
+        <input type='number' placeholder='Banyaknya' id='qty-${tgl}'>
+        <input type='number' placeholder='Harga' id='harga-${tgl}'>
+        <button class='btn-blue' onclick="tambahBarang('${tgl}')">Tambah</button>
 
-  // sort tanggal ascending
-  const tkeys = Object.keys(grup).sort();
+        <table>
+            <tr>
+                <th>No</th>
+                <th>Nama Barang</th>
+                <th>Banyaknya</th>
+                <th>Harga</th>
+                <th>Total</th>
+                <th>Aksi</th>
+            </tr>
+        `;
 
-  let html = "";
-  let grandTotal = 0;
-  tkeys.forEach(tgl => {
-    html += `<div class="date-title">Tanggal: ${tgl}</div>`;
-    html += `<table><thead><tr>
-      <th style="width:48px">No</th>
-      <th>Nama Barang</th>
-      <th style="width:140px">Harga</th>
-      <th style="width:140px">Banyaknya</th>
-      <th style="width:140px">Total</th>
-      <th style="width:140px">Aksi</th>
-      </tr></thead><tbody>`;
+        data[tgl].forEach((item, i) => {
+            let total = item.qty * item.harga;
+            subtotal += total;
+            grandTotal += total;
 
-    let subtotal = 0;
-    grup[tgl].forEach((it, idx) => {
-      // hargaNumber tersimpan
-      const hargaNum = Number(it.hargaNum || 0);
-      const banyakNum = parseBanyak(it.banyak);
-      const total = hargaNum * (isNaN(banyakNum)?1:banyakNum);
-      subtotal += total;
-      html += `<tr>
-        <td>${idx+1}</td>
-        <td>${escapeHtml(it.nama)}</td>
-        <td class="right">${formatRp(hargaNum)}</td>
-        <td class="right">${escapeHtml(it.banyak)}</td>
-        <td class="right">${formatRp(total)}</td>
-        <td class="right controls">
-          <button class="edit" onclick="editItem('${it.id}')">Edit</button>
-          <button class="del" onclick="deleteItem('${it.id}')">Hapus</button>
-        </td>
-      </tr>`;
+            html += `
+            <tr>
+                <td>${i+1}</td>
+                <td>${item.nama}</td>
+                <td>${item.qty}</td>
+                <td>${item.harga.toLocaleString()}</td>
+                <td>${total.toLocaleString()}</td>
+                <td><button class='btn-orange' onclick="hapusItem('${tgl}', ${i})">X</button></td>
+            </tr>`;
+        });
+
+        html += `</table>`;
+        html += `<div class="subtotal">SUB TOTAL: Rp ${subtotal.toLocaleString()}</div>`;
     });
 
-    grandTotal += subtotal;
-    html += `<tr class="subtotal-row">
-      <td colspan="4">Sub Total</td>
-      <td class="right">${formatRp(subtotal)}</td>
-      <td></td>
-    </tr>`;
+    document.getElementById("area").innerHTML = html;
 
-    html += `</tbody></table><br/>`;
-  });
-
-  area.innerHTML = html;
-  const g = document.getElementById("grand");
-  g.style.display = "block";
-  g.textContent = "Grand Total (semua tanggal): " + formatRp(grandTotal);
-}
-
-/* safe html escape */
-function escapeHtml(s){
-  if(s === null || s === undefined) return "";
-  return String(s).replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});
-}
-
-/* =========== ADD / EDIT =========== */
-let editingId = null;
-function tambahAtauUpdate(){
-  const tgl = document.getElementById("tgl").value;
-  const nama = document.getElementById("nama").value.trim();
-  const hargaRaw = document.getElementById("harga").value.trim();
-  const banyakRaw = document.getElementById("banyak").value.trim();
-
-  if(!tgl || !nama || !hargaRaw){
-    alert("Isi tanggal, nama barang, dan harga.");
-    return;
-  }
-  const hargaNum = parseHarga(hargaRaw);
-  const banyakNum = parseBanyak(banyakRaw);
-
-  const total = hargaNum * (isNaN(banyakNum)?1:banyakNum);
-
-  if(editingId){
-    // update
-    const idx = data.findIndex(x => x.id === editingId);
-    if(idx !== -1){
-      data[idx].tgl = tgl;
-      data[idx].nama = nama;
-      data[idx].hargaNum = hargaNum;
-      data[idx].hargaRaw = hargaRaw;
-      data[idx].banyak = banyakRaw || String(banyakNum);
-      // total dihitung saat render, tapi simpan juga untuk referensi
-      data[idx].totalCached = total;
+    let grandDom = document.getElementById("grandTotal");
+    if (grandTotal > 0) {
+        grandDom.style.display = "block";
+        grandDom.innerHTML = `TOTAL KESELURUHAN: Rp ${grandTotal.toLocaleString()}`;
+    } else {
+        grandDom.style.display = "none";
     }
-    editingId = null;
-    document.getElementById("modeLabel").textContent = "Mode: Tambah";
-    document.getElementById("addBtn").textContent = "Tambah";
-  } else {
-    // tambahkan baru -> id unik
-    const id = 'id' + Date.now() + Math.random().toString(16).slice(2,8);
-    data.push({
-      id,
-      tgl,
-      nama,
-      hargaNum,
-      hargaRaw,
-      banyak: banyakRaw || String(banyakNum),
-      totalCached: total
-    });
-  }
-  simpan();
-  tampilkan();
-  resetForm();
 }
 
-/* reset form */
-function resetForm(){
-  document.getElementById("tgl").value = "";
-  document.getElementById("nama").value = "";
-  document.getElementById("harga").value = "";
-  document.getElementById("banyak").value = "";
-  editingId = null;
-  document.getElementById("modeLabel").textContent = "Mode: Tambah";
-  document.getElementById("addBtn").textContent = "Tambah";
-}
-
-/* edit item */
-function editItem(id){
-  const it = data.find(x => x.id === id);
-  if(!it) return alert("Item tidak ditemukan.");
-  document.getElementById("tgl").value = it.tgl;
-  document.getElementById("nama").value = it.nama;
-  document.getElementById("harga").value = it.hargaRaw || String(it.hargaNum || "");
-  document.getElementById("banyak").value = it.banyak || "";
-  editingId = id;
-  document.getElementById("modeLabel").textContent = "Mode: Edit";
-  document.getElementById("addBtn").textContent = "Simpan";
-  // scroll ke form (berguna di device kecil)
-  document.getElementById("tgl").scrollIntoView({behavior:"smooth",block:"center"});
-}
-
-/* delete item */
-function deleteItem(id){
-  if(!confirm("Hapus data ini?")) return;
-  data = data.filter(x => x.id !== id);
-  simpan();
-  tampilkan();
-}
-
-/* =========== EXPORT / IMPORT =========== */
-function exportData(){
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "nota_pengeluaran_export.json";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function importData(event){
-  const f = event.target.files && event.target.files[0];
-  if(!f) return;
-  const r = new FileReader();
-  r.onload = function(e){
-    try{
-      const imported = JSON.parse(e.target.result);
-      if(!Array.isArray(imported)) throw new Error("Format tidak valid");
-      // optional: konfirmasi gabungkan atau ganti
-      if(confirm("Gabungkan data import dengan data saat ini? Tekan OK untuk gabung, Cancel untuk ganti semua.")){
-        // gabung -> pastikan id unik, jika id sama, skip
-        const existingIds = new Set(data.map(x => x.id));
-        imported.forEach(it => {
-          if(!it.id) it.id = 'id' + Date.now() + Math.random().toString(16).slice(2,8);
-          if(!existingIds.has(it.id)) data.push(it);
-        });
-      } else {
-        data = imported.map(it => {
-          if(!it.id) it.id = 'id' + Date.now() + Math.random().toString(16).slice(2,8);
-          return it;
-        });
-      }
-      simpan();
-      tampilkan();
-      alert("Import berhasil.");
-    } catch(err){
-      alert("Gagal mengimpor: " + err.message);
-    }
-  };
-  r.readAsText(f);
-  // reset input
-  event.target.value = "";
-}
-
-/* =========== LOGOUT =========== */
-function logout(){
-  if(!confirm("Logout?")) return;
-  localStorage.removeItem("nota_logged_in");
-  // tidak menghapus data, hanya logout
-  window.location.href = "index.html";
-}
-
-/* initial render */
 tampilkan();
 
-/* optional: keyboard enter submit pada input */
-document.getElementById("banyak").addEventListener("keydown", function(e){
-  if(e.key === "Enter") tambahAtauUpdate();
-});
-document.getElementById("harga").addEventListener("keydown", function(e){
-  if(e.key === "Enter") tambahAtauUpdate();
-});
+// ------------------ EXPORT JSON ---------------------
+function exportJSON() {
+    let blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+    let url = URL.createObjectURL(blob);
+
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = "nota.json";
+    a.click();
+}
+
+// ------------------ IMPORT JSON ---------------------
+function importJSON(e) {
+    let file = e.target.files[0];
+    let reader = new FileReader();
+
+    reader.onload = function(l) {
+        data = JSON.parse(l.target.result);
+        save();
+    };
+
+    reader.readAsText(file);
+}
 </script>
+
+<!-- ------------------ LIBRARY PDF ------------------ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+// ------------------ DOWNLOAD PDF ---------------------
+async function downloadPDF() {
+    const element = document.querySelector(".card");
+
+    const canvas = await html2canvas(element, { scale: 2 });
+    const img = canvas.toDataURL("image/png");
+
+    const pdf = new jspdf.jsPDF("p", "mm", "a4");
+    const width = pdf.internal.pageSize.getWidth();
+    const height = canvas.height * width / canvas.width;
+
+    pdf.addImage(img, "PNG", 0, 0, width, height);
+    pdf.save("nota.pdf");
+}
+</script>
+
 </body>
 </html>
+
