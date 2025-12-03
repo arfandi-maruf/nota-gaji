@@ -173,8 +173,8 @@ function tampilkan() {
                 <td>${i+1}</td>
                 <td>${item.nama}</td>
                 <td>${item.qty}</td>
-                <td>${item.harga.toLocaleString()}</td>
-                <td>${total.toLocaleString()}</td>
+                <td>Rp ${item.harga.toLocaleString()}</td>
+                <td>Rp ${total.toLocaleString()}</td>
                 <td><button class='btn-orange' onclick="hapusItem('${tgl}', ${i})">X</button></td>
             </tr>`;
         });
@@ -244,5 +244,6 @@ async function downloadPDF() {
 
 </body>
 </html>
+
 
 
