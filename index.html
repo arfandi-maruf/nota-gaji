@@ -1,95 +1,62 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>Nota Gaji & Pengeluaran (Realtime DB)</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="style.css">
-
-<!-- html2pdf -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Nota Gaji & Pengeluaran</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<nav class="navbar">
-    <div class="nav-item" onclick="showPage('gajiPage')">Gaji</div>
-    <div class="nav-item" onclick="showPage('pengeluaranPage')">Pengeluaran</div>
+<nav>
+    <button onclick="showPage('gaji')">Menu Gaji</button>
+    <button onclick="showPage('pengeluaran')">Menu Pengeluaran</button>
 </nav>
 
-<div class="container">
+<!-- ------------------- HALAMAN GAJI ------------------- -->
+<section id="gaji" class="page glass">
+    <h2>Catatan Gaji Mingguan</h2>
 
-    <!-- GAJI -->
-    <div id="gajiPage" class="page">
-        <h2>📘 Nota Gaji</h2>
-
-        <div class="input-group">
-            <input type="date" id="gajiTanggal">
-            <input type="number" id="gajiJumlah" placeholder="Jumlah Gaji">
-        </div>
-
-        <div class="input-group">
-            <button onclick="tambahGaji()">Tambah</button>
-            <button class="danger" onclick="hapusSemua('gaji')">Hapus Semua</button>
-            <button class="info" onclick="exportData()">Export</button>
-            <button class="info" onclick="openImportDialog()">Import</button>
-        </div>
-
-        <button class="pdf-btn" onclick="downloadPDF('gaji')">Download PDF Gaji</button>
-
-        <div id="tabelGajiWrapper"></div>
-        <div id="grandTotalGaji" class="grand-total"></div>
+    <div class="form">
+        <input id="gajiNama" placeholder="Nama Tukang">
+        <input id="gajiJumlah" type="number" placeholder="Jumlah Gaji">
+        <button onclick="tambahGaji()">Tambah</button>
     </div>
 
-    <!-- PENGELUARAN -->
-    <div id="pengeluaranPage" class="page" style="display:none">
-        <h2>📕 Nota Pengeluaran</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th>Jumlah</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="gajiTable"></tbody>
+    </table>
+</section>
 
-        <div class="input-group">
-            <input type="date" id="pengTanggal">
-            <input type="text" id="pengNama" placeholder="Nama Barang">
-            <input type="number" id="pengQty" placeholder="Banyaknya">
-            <input type="number" id="pengHarga" placeholder="Harga Satuan">
-        </div>
+<!-- ---------------- HALAMAN PENGELUARAN ---------------- -->
+<section id="pengeluaran" class="page glass" style="display:none">
 
-        <div class="input-group">
-            <button onclick="tambahPengeluaran()">Tambah</button>
-            <button class="danger" onclick="hapusSemua('pengeluaran')">Hapus Semua</button>
-            <button class="info" onclick="exportData()">Export</button>
-            <button class="info" onclick="openImportDialog()">Import</button>
-        </div>
+    <h2>Catatan Pengeluaran</h2>
 
-        <button class="pdf-btn red" onclick="downloadPDF('pengeluaran')">Download PDF Pengeluaran</button>
-
-        <div id="tabelPengWrapper"></div>
-        <div id="grandTotalPengeluaran" class="grand-total"></div>
+    <div class="form">
+        <input type="date" id="pengTanggal">
+        <input type="text" id="pengNama" placeholder="Nama Barang">
+        <input type="number" id="pengQty" placeholder="Banyaknya">
+        <input type="number" id="pengHarga" placeholder="Harga">
+        <button onclick="tambahPengeluaran()">Tambah</button>
     </div>
 
-</div>
+    <div id="pengeluaranWrapper"></div>
 
-<!-- Firebase Realtime DB -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-  import { getDatabase, ref, push, onValue, remove, set, get } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+    <h2 class="grandTotal">Grand Total Semua Tanggal: <span id="grandTotalRp">0</span></h2>
 
-  // CONFIG SESUAI PROJECTMU
-  const firebaseConfig = {
-    apiKey: "AIzaSyAFrTl69PSRMptdzpenzJufCJ2E70D0L54",
-    authDomain: "notapengeluaranapp.firebaseapp.com",
-    databaseURL: "https://notapengeluaranapp-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "notapengeluaranapp",
-    storageBucket: "notapengeluaranapp.firebasestorage.app",
-    messagingSenderId: "667913212428",
-    appId: "1:667913212428:web:1cf5b4c1d7f82ec52d5429"
-  };
+    <button class="pdfBtn" onclick="exportSemuaPDF()">Download Semua PDF</button>
+</section>
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  window.firebaseRT = { db, ref, push, onValue, remove, set, get };
-</script>
-
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 
 </body>
 </html>

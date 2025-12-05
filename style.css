@@ -1,101 +1,96 @@
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f2f2f2;
+    margin: 0;
+    padding: 20px;
+    background: linear-gradient(120deg,#3a7bd5,#00d2ff);
+    font-family: Poppins, sans-serif;
+    color: #fff;
 }
 
-.navbar {
-  display: flex;
-  background: #333;
-  color: white;
-  padding: 10px;
-  justify-content: center;
-  gap: 20px;
+nav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
-.nav-item {
-  cursor: pointer;
-  padding: 8px 15px;
-  background: #444;
-  border-radius: 6px;
+nav button {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    padding: 10px 15px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    color: #fff;
+    cursor: pointer;
+    transition: .2s;
 }
 
-.nav-item:hover {
-  background: #555;
+nav button:hover {
+    background: rgba(255, 255, 255, 0.35);
 }
 
-.container {
-  padding: 15px;
+.page.glass {
+    background: rgba(255,255,255,0.15);
+    padding: 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
 
-h2 {
-  text-align: center;
+.form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
 }
 
-.input-group {
-  display: flex;
-  gap: 8px;
-  margin: 10px 0;
-  flex-wrap: wrap;
-}
-
-input, button {
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #aaa;
+.form input {
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
 }
 
 button {
-  cursor: pointer;
-}
-
-button.danger {
-  background: #d9534f;
-  color: white;
-}
-
-button.info {
-  background: #0275d8;
-  color: white;
-}
-
-button.pdf-btn {
-  margin: 10px 0;
-  padding: 10px;
-  width: 100%;
-  background: #067cff;
-  color: white;
-  border-radius: 8px;
-}
-
-button.pdf-btn.red {
-  background: #e84141;
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
 }
 
 table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  margin-top: 5px;
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+    background: rgba(255,255,255,0.2);
+    border-radius: 15px;
+    overflow: hidden;
 }
 
-table th, table td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: center;
+th, td {
+    padding: 10px;
 }
 
-.subtotal {
-  font-weight: bold;
-  margin: 5px 0 20px 0;
+tr:nth-child(even) {
+    background: rgba(255,255,255,0.1);
 }
 
-.grand-total {
-  padding: 10px;
-  background: white;
-  border-radius: 8px;
-  margin-top: 20px;
-  font-size: 18px;
-  font-weight: bold;
-  text-align: center;
+.card {
+    background: rgba(255,255,255,0.18);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.grandTotal {
+    margin-top: 20px;
+    padding: 10px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 10px;
+}
+
+.pdfBtn {
+    margin-top: 15px;
+    background: #ffeb3b;
+    color: #000;
+    font-weight: bold;
 }

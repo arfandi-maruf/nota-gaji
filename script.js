@@ -1,252 +1,177 @@
-// Firebase Global
-const fb = window.firebaseRT;
+// -------------------- Firebase Setup --------------------
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
-// Data cache untuk render
-let data = [];
+const firebaseConfig = {
+    apiKey: "AIzaSyAFrTl69PSRMptdzpenzJufCJ2E70D0L54",
+    authDomain: "notapengeluaranapp.firebaseapp.com",
+    projectId: "notapengeluaranapp",
+    storageBucket: "notapengeluaranapp.firebasestorage.app",
+    messagingSenderId: "667913212428",
+    appId: "1:667913212428:web:1cf5b4c1d7f82ec52d5429",
+    measurementId: "G-NP9R7815PK",
+    databaseURL: "https://notapengeluaranapp-default-rtdb.firebaseio.com/"
+};
 
-function formatRupiah(angka) {
-  return "Rp " + Number(angka).toLocaleString("id-ID");
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+
+// -------------------- Helper Format Rupiah --------------------
+function formatRupiah(num) {
+    return "Rp " + Number(num).toLocaleString("id-ID");
 }
 
-function showPage(page) {
-  document.getElementById("gajiPage").style.display = "none";
-  document.getElementById("pengeluaranPage").style.display = "none";
-  document.getElementById(page).style.display = "block";
-}
 
-/* ================= LISTENER ================= */
-const notaRef = fb.ref(fb.db, "nota");
+// -------------------- NAV --------------------
+window.showPage = function(pg) {
+    document.getElementById("gaji").style.display = "none";
+    document.getElementById("pengeluaran").style.display = "none";
+    document.getElementById(pg).style.display = "block";
+};
 
-fb.onValue(notaRef, (snapshot) => {
-  const obj = snapshot.val() || {};
-  data = Object.entries(obj).map(([k, v]) => ({ _id: k, ...v }));
-  data.sort((a,b) => (a.createdAt || 0) - (b.createdAt || 0));
-  tampilkan();
+
+// -------------------- GAJI --------------------
+window.tambahGaji = function() {
+    let nama = gajiNama.value;
+    let jumlah = gajiJumlah.value;
+    if (!nama || !jumlah) return;
+
+    push(ref(db, "gaji"), { nama, jumlah: Number(jumlah) });
+
+    gajiNama.value = "";
+    gajiJumlah.value = "";
+};
+
+// Load Gaji
+onValue(ref(db, "gaji"), snap => {
+    let tbody = document.getElementById("gajiTable");
+    tbody.innerHTML = "";
+    if (!snap.val()) return;
+
+    Object.entries(snap.val()).forEach(([id, item]) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.nama}</td>
+                <td>${formatRupiah(item.jumlah)}</td>
+                <td>
+                    <button onclick="hapusGaji('${id}')">Hapus</button>
+                </td>
+            </tr>
+        `;
+    });
 });
 
-/* ================= TAMBAH ================= */
-function tambahGaji() {
-  const tgl = gajiTanggal.value;
-  const jml = Number(gajiJumlah.value);
+window.hapusGaji = function(id) {
+    remove(ref(db, "gaji/" + id));
+};
 
-  if (!tgl || !jml) return alert("Isi semua!");
 
-  fb.push(notaRef, {
-    jenis: "gaji",
-    tanggal: tgl,
-    jumlah: jml,
-    total: jml,
-    createdAt: Date.now()
-  });
+// -------------------- PENGELUARAN --------------------
+window.tambahPengeluaran = function() {
+    let tgl = pengTanggal.value;
+    let nama = pengNama.value;
+    let qty = pengQty.value;
+    let harga = pengHarga.value;
 
-  gajiTanggal.value = "";
-  gajiJumlah.value = "";
-}
+    if (!tgl || !nama || !qty || !harga) return;
 
-function tambahPengeluaran() {
-  const tgl = pengTanggal.value;
-  const nama = pengNama.value.trim();
-  const qty = Number(pengQty.value);
-  const harga = Number(pengHarga.value);
+    // ambil angka pertama dari "qty" (misal: "10 kg" → 10)
+    let qtyNum = parseFloat(qty);
 
-  if (!tgl || !nama || !qty || !harga) return alert("Isi semua!");
-
-  fb.push(notaRef, {
-    jenis: "pengeluaran",
-    tanggal: tgl,
-    nama,
-    qty,
-    harga,
-    total: qty * harga,
-    createdAt: Date.now()
-  });
-
-  pengTanggal.value = "";
-  pengNama.value = "";
-  pengQty.value = "";
-  pengHarga.value = "";
-}
-
-/* ================= HAPUS ================= */
-function hapusItemById(id) {
-  if (!confirm("Hapus item ini?")) return;
-  fb.remove(fb.ref(fb.db, "nota/" + id));
-}
-
-async function hapusSemua(jenis) {
-  if (!confirm("Hapus semua " + jenis + "?")) return;
-
-  const snap = await fb.get(notaRef);
-  const val = snap.val() || {};
-
-  const del = [];
-  Object.entries(val).forEach(([k, v]) => {
-    if (v.jenis === jenis) del.push(k);
-  });
-
-  del.forEach(k => fb.remove(fb.ref(fb.db, "nota/" + k)));
-}
-
-/* ================= EXPORT / IMPORT ================= */
-function exportData() {
-  const exp = data.map(({ _id, ...rest }) => rest);
-  const blob = new Blob([JSON.stringify(exp, null, 2)], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "backup-nota.json";
-  a.click();
-}
-
-function openImportDialog() {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = ".json";
-
-  input.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const text = await file.text();
-    const arr = JSON.parse(text);
-
-    if (!confirm("Import akan MENGHAPUS seluruh data lama. Lanjutkan?"))
-      return;
-
-    // hapus semua
-    const snap = await fb.get(notaRef);
-    const cur = snap.val() || {};
-    await Promise.all(Object.keys(cur).map(k => fb.remove(fb.ref(fb.db, "nota/" + k))));
-
-    // push baru
-    arr.forEach(item =>
-      fb.push(notaRef, { ...item, createdAt: item.createdAt || Date.now() })
-    );
-  };
-
-  input.click();
-}
-
-/* ================= PDF ================= */
-function downloadPDF(jenis) {
-  let area = document.createElement("div");
-
-  // clone tabel saja (tanpa tombol)
-  if (jenis === "gaji")
-    area.innerHTML = document.getElementById("tabelGajiWrapper").innerHTML;
-  else
-    area.innerHTML = document.getElementById("tabelPengWrapper").innerHTML;
-
-  html2pdf(area, {
-    margin: 10,
-    filename: jenis + "_nota.pdf",
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: "mm", format: "a4" }
-  });
-}
-
-/* ================= RENDER ================= */
-function tampilkan() {
-  tampilkanGaji();
-  tampilkanPengeluaran();
-}
-
-function tampilkanGaji() {
-  const wrap = tabelGajiWrapper;
-  wrap.innerHTML = "";
-
-  const list = data.filter(x => x.jenis === "gaji");
-  if (list.length === 0) {
-    wrap.innerHTML = "<i>Tidak ada data</i>";
-    grandTotalGaji.innerHTML = "";
-    return;
-  }
-
-  const group = {};
-  list.forEach(i => {
-    if (!group[i.tanggal]) group[i.tanggal] = [];
-    group[i.tanggal].push(i);
-  });
-
-  let grand = 0;
-
-  Object.keys(group).sort().forEach(tgl => {
-    let sub = 0;
-
-    let html = `<h3>${tgl}</h3>
-    <table>
-      <thead><tr><th>No</th><th>Jumlah</th><th>Aksi</th></tr></thead>
-      <tbody>`;
-
-    group[tgl].forEach((r, i) => {
-      sub += r.total;
-      html += `
-        <tr>
-          <td>${i+1}</td>
-          <td>${formatRupiah(r.total)}</td>
-          <td><button onclick="hapusItemById('${r._id}')" class="danger">X</button></td>
-        </tr>`;
+    push(ref(db, "pengeluaran"), {
+        tgl,
+        nama,
+        qty,        // simpan teks utuh
+        harga: Number(harga),
+        total: qtyNum * Number(harga)
     });
 
-    html += `</tbody></table>
-      <div class="subtotal">Subtotal: ${formatRupiah(sub)}</div>
-      <hr>`;
+    pengNama.value = "";
+    pengQty.value = "";
+    pengHarga.value = "";
+};
 
-    wrap.insertAdjacentHTML("beforeend", html);
-    grand += sub;
-  });
 
-  grandTotalGaji.innerHTML = "Grand Total: " + formatRupiah(grand);
-}
+// Load & Group Pengeluaran
+onValue(ref(db, "pengeluaran"), snap => {
+    let data = snap.val();
+    let wrapper = document.getElementById("pengeluaranWrapper");
+    wrapper.innerHTML = "";
 
-function tampilkanPengeluaran() {
-  const wrap = tabelPengWrapper;
-  wrap.innerHTML = "";
+    if (!data) return;
 
-  const list = data.filter(x => x.jenis === "pengeluaran");
-  if (!list.length) {
-    wrap.innerHTML = "<i>Tidak ada data</i>";
-    grandTotalPengeluaran.innerHTML = "";
-    return;
-  }
-
-  const group = {};
-  list.forEach(i => {
-    if (!group[i.tanggal]) group[i.tanggal] = [];
-    group[i.tanggal].push(i);
-  });
-
-  let grand = 0;
-
-  Object.keys(group).sort().forEach(tgl => {
-    let sub = 0;
-
-    let html = `
-    <h3>${tgl}</h3>
-    <table>
-      <thead><tr><th>No</th><th>Nama</th><th>Qty</th><th>Harga</th><th>Total</th><th>Aksi</th></tr></thead>
-      <tbody>`;
-
-    group[tgl].forEach((r, i) => {
-      sub += r.total;
-
-      html += `
-        <tr>
-          <td>${i+1}</td>
-          <td>${r.nama}</td>
-          <td>${r.qty}</td>
-          <td>${formatRupiah(r.harga)}</td>
-          <td>${formatRupiah(r.total)}</td>
-          <td><button onclick="hapusItemById('${r._id}')" class="danger">X</button></td>
-        </tr>`;
+    let group = {};
+    Object.entries(data).forEach(([id, item]) => {
+        if (!group[item.tgl]) group[item.tgl] = [];
+        group[item.tgl].push({ id, ...item });
     });
 
-    html += `</tbody></table>
-      <div class="subtotal">Subtotal: ${formatRupiah(sub)}</div>
-      <hr>`;
+    let grand = 0;
 
-    wrap.insertAdjacentHTML("beforeend", html);
-    grand += sub;
-  });
+    Object.keys(group).sort().forEach(tgl => {
+        let subtotal = 0;
 
-  grandTotalPengeluaran.innerHTML = "Grand Total: " + formatRupiah(grand);
+        let card = document.createElement("div");
+        card.className = "card";
+
+        card.innerHTML = `
+            <h3>📅 ${tgl}</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nama Barang</th>
+                        <th>Banyaknya</th>
+                        <th>Harga</th>
+                        <th>Total</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="body-${tgl}"></tbody>
+            </table>
+            <h4>Subtotal: <span id="sub-${tgl}">0</span></h4>
+            <button onclick="exportPerTanggalPDF('${tgl}')">Download PDF Tanggal Ini</button>
+        `;
+
+        wrapper.appendChild(card);
+
+        let tbody = document.getElementById("body-" + tgl);
+
+        group[tgl].forEach(item => {
+            subtotal += item.total;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.nama}</td>
+                    <td>${item.qty}</td>
+                    <td>${formatRupiah(item.harga)}</td>
+                    <td>${formatRupiah(item.total)}</td>
+                    <td>
+                        <button onclick="hapusPeng('${item.id}')">Hapus</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        document.getElementById("sub-" + tgl).innerText = formatRupiah(subtotal);
+        grand += subtotal;
+    });
+
+    document.getElementById("grandTotalRp").innerText = formatRupiah(grand);
+});
+
+
+// Hapus pengeluaran
+window.hapusPeng = function(id) {
+    remove(ref(db, "pengeluaran/" + id));
+};
+
+
+// -------------------- EXPORT PDF --------------------
+window.exportSemuaPDF = function() {
+    window.print();
+}
+
+window.exportPerTanggalPDF = function(tgl) {
+    alert("Untuk sekarang masih memakai print seleksi. Jika mau aku buatkan generator PDF khusus yang rapi.");
 }
