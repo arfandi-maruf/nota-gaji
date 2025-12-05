@@ -1,57 +1,95 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Login - Nota Pengeluaran</title>
-<style>
-  :root{--bg:#f4f6f8;--card:#fff;--accent:#1976d2;--ok:#2e7d32}
-  html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg)}
-  .wrap{height:100%;display:flex;align-items:center;justify-content:center}
-  .card{width:320px;background:var(--card);padding:22px;border-radius:10px;
-        box-shadow:0 6px 20px rgba(0,0,0,0.08);text-align:center}
-  h2{margin:0 0 16px}
-  input{width:100%;padding:10px;margin:8px 0;border:1px solid #d7d7d7;border-radius:6px}
-  button{width:100%;padding:10px;border:0;border-radius:6px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
-  .note{font-size:13px;color:#555;margin-top:10px}
-  .err{color:#b00020;margin-top:8px}
-</style>
+<meta charset="UTF-8">
+<title>Nota Gaji & Pengeluaran (Realtime DB)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+
+<!-- html2pdf -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 </head>
+
 <body>
-<div class="wrap">
-  <div class="card">
-    <h2>Login Nota Pengeluaran</h2>
-    <input id="u" placeholder="Username" autocomplete="username">
-    <input id="p" type="password" placeholder="Password" autocomplete="current-password">
-    <button id="btn" onclick="login()">Masuk</button>
-    <div class="err" id="err" role="status" aria-live="polite"></div>
-    <div class="note">Username: <strong>Arfandi123</strong> • Password: <strong>arfandi123</strong></div>
-  </div>
+
+<nav class="navbar">
+    <div class="nav-item" onclick="showPage('gajiPage')">Gaji</div>
+    <div class="nav-item" onclick="showPage('pengeluaranPage')">Pengeluaran</div>
+</nav>
+
+<div class="container">
+
+    <!-- GAJI -->
+    <div id="gajiPage" class="page">
+        <h2>📘 Nota Gaji</h2>
+
+        <div class="input-group">
+            <input type="date" id="gajiTanggal">
+            <input type="number" id="gajiJumlah" placeholder="Jumlah Gaji">
+        </div>
+
+        <div class="input-group">
+            <button onclick="tambahGaji()">Tambah</button>
+            <button class="danger" onclick="hapusSemua('gaji')">Hapus Semua</button>
+            <button class="info" onclick="exportData()">Export</button>
+            <button class="info" onclick="openImportDialog()">Import</button>
+        </div>
+
+        <button class="pdf-btn" onclick="downloadPDF('gaji')">Download PDF Gaji</button>
+
+        <div id="tabelGajiWrapper"></div>
+        <div id="grandTotalGaji" class="grand-total"></div>
+    </div>
+
+    <!-- PENGELUARAN -->
+    <div id="pengeluaranPage" class="page" style="display:none">
+        <h2>📕 Nota Pengeluaran</h2>
+
+        <div class="input-group">
+            <input type="date" id="pengTanggal">
+            <input type="text" id="pengNama" placeholder="Nama Barang">
+            <input type="number" id="pengQty" placeholder="Banyaknya">
+            <input type="number" id="pengHarga" placeholder="Harga Satuan">
+        </div>
+
+        <div class="input-group">
+            <button onclick="tambahPengeluaran()">Tambah</button>
+            <button class="danger" onclick="hapusSemua('pengeluaran')">Hapus Semua</button>
+            <button class="info" onclick="exportData()">Export</button>
+            <button class="info" onclick="openImportDialog()">Import</button>
+        </div>
+
+        <button class="pdf-btn red" onclick="downloadPDF('pengeluaran')">Download PDF Pengeluaran</button>
+
+        <div id="tabelPengWrapper"></div>
+        <div id="grandTotalPengeluaran" class="grand-total"></div>
+    </div>
+
 </div>
 
-<script>
-const USER = "Arfandi123";
-const PASS = "arfandi123";
+<!-- Firebase Realtime DB -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import { getDatabase, ref, push, onValue, remove, set, get } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
-function login(){
-  const u = document.getElementById("u").value.trim();
-  const p = document.getElementById("p").value;
-  const e = document.getElementById("err");
-  e.textContent = "";
-  if(u === USER && p === PASS){
-    // tandai login sukses (disimpan di localStorage sehingga tetap login di domain ini)
-    localStorage.setItem("nota_logged_in", USER);
-    // redirect ke home
-    window.location.href = "home.html";
-  } else {
-    e.textContent = "Username atau password salah.";
-  }
-}
+  // CONFIG SESUAI PROJECTMU
+  const firebaseConfig = {
+    apiKey: "AIzaSyAFrTl69PSRMptdzpenzJufCJ2E70D0L54",
+    authDomain: "notapengeluaranapp.firebaseapp.com",
+    databaseURL: "https://notapengeluaranapp-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "notapengeluaranapp",
+    storageBucket: "notapengeluaranapp.firebasestorage.app",
+    messagingSenderId: "667913212428",
+    appId: "1:667913212428:web:1cf5b4c1d7f82ec52d5429"
+  };
 
-// jika sudah login, langsung ke home
-if(localStorage.getItem("nota_logged_in") === USER){
-  window.location.href = "home.html";
-}
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  window.firebaseRT = { db, ref, push, onValue, remove, set, get };
 </script>
+
+<script src="script.js"></script>
+
 </body>
 </html>
